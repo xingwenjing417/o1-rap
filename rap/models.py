@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import torch
 
-from llama import LLaMA
+#from llama import LLaMA
 
 
 class QueryLM(ABC):
@@ -44,8 +44,9 @@ class QueryLlama(QueryLM):
         self.max_response_length = max_response_length
         self.log_file = log_file
         self.max_batch_size = llamamodel.model.params.max_batch_size
-        self.yes_no = self.tokenizer.encode('Yes No', bos=False, eos=False)
+        self.yes_no = self.tokenizer.encode('Yes No', bos=False, eos=False)#self.yes_no 变量将保存 "Yes No" 在 LLaMA 模型中的 token 编码。
 
+    #基于当前批量的提示文本（通过将prompt重复end - start次得到）进行文本生成操作。在生成过程中，设置了最大生成长度为self.max_response_length，温度参数为temperature，以及结束标记 ID 为eos_token_id
     def query_LM(self, prompt, eos_token_id, num_return_sequences=1, do_sample=True, temperature=0.8):
         temperature = temperature if do_sample else 0
         all_results = []
@@ -73,6 +74,7 @@ class QueryLlama(QueryLM):
             output, h = self.llamamodel.model.forward(tokens, start_pos=0)
             ret.append(output)
         outputs = torch.cat(ret, dim=0)
+        #从 outputs 中提取出与 "Yes No" token 对应的列， 是为了计算模型是否倾向于生成 "Yes" 或 "No"。通过对这些 logits 进行处理，模型可以根据其对 "Yes" 和 "No" 的信心水平来做出决策。这对于某些任务（如二分类任务，或者判断模型是否给出了“是”或“否”的答案）非常重要。
         filtered = outputs[:, self.yes_no]
         dist = torch.softmax(filtered, dim=-1)
         return dist

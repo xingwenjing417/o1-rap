@@ -1,0 +1,39 @@
+{
+    "easy_code": {
+        "data1": {
+           "query": "请将下面的代码翻译成python，且遵循以下要求：1. 只需要生成翻译后代码\n2. 函数命名使用小写字母，且用下划线分割单词。\n3. 请把代码写在一个markdown ```python```包裹中。\n\n需要翻译的代码如下：\n\n#include<stdio.h>\n#include<math.h>\n#include<vector>\nusing namespace std;\n#include<algorithm>\n#include<stdlib.h>\nint add(vector<int> lst){\n    int sum=0;\n    for (int i=0;i*2+1<lst.size();i++)\n        if (lst[i*2+1]%2==0) sum+=lst[i*2+1];\n    return sum;\n}"
+        },   
+        "data2": {
+            "query": "编写一个Python函数并采用markdown代码块格式来解决以下问题：\n在一个排好序且被旋转的数组中找出不小于限定值的最小元素。\n\n参数：\n nums（List[int]）：在升序排序后并被旋转1到n次的唯一整数列表。\n limit（int）：目标元素不能小于的限定值。\n返回：\n int：旋转数组中的最小元素。\n示例：\n assert find_min_in_rotated_sorted_array([3, 4, 5, 1, 2], 2) == 2\n assert find_min_in_rotated_sorted_array([3, 4, 5, 1, 2], 4) == 4"    
+        },
+        "data3": {
+            "query": "编写一个Python函数并使用markdown代码块格式来解决这个问题：\n给定一个长度为n的数组nums，而且数组中的数字全部在范围[1, n]内。 在范围[1,n]中只有一个数字缺失。\n返回数组中缺失的唯一数字。\n\n参数:\n nums (list[int]): 一个包含n个范围[1, n]内数字的整数列表。\n\n返回值:\n int: 范围内缺失的数字。\n示例:\n assert find_missing_number([3, 1, 1]) == 2"
+        }
+    
+    },
+    "hard_code": {
+        "data1": {
+            "query": "编写一个Python函数来计算Jaccard分数，也被称为Jaccard指数或交并比，用于二分类任务。\nJaccard分数是衡量两组数据相似性的一种方式。在二分类的背景下，它测量了正标签的相似性和多样性。\n定义函数为 def jaccard_score(y_true, y_pred)，其中y_true和y_pred是包含二分类标签的列表或数组。"
+        },
+        "data2": {
+            "query": "用shapely库解决问题：\n实现 Python 函数 solve(poly, line) 计算一条线段line和多边形poly的边的交点个数\npoly用二元组数组表示，line用长度为2的二元组数组表示"
+        },
+        "data3": {
+            "query": "请写一个完整的Python函数`solve(smiles)`，提取分子的Bemis-Murcko骨架，并转换为CSK(cyclic skeleton), 返回CSK的SMILES。"
+        },
+        "data4": {
+            "query": "请编写一个Python程序，实现以下功能：\n计算一个数N的所有因子对，使得每对因子的和与N互质\n给定一个整数N，任务是计算N的所有因子对，使得每对因子的和与N互质。\n函数签名为`CountPairs(n)`"
+        }
+    },
+    "middle_code": {
+        "data1": {
+            "query": "请写一个完整的Python函数`solve(smiles)`, 输入一个分子的SMILES，寻找它的互变异构体(包括它自身在内)的最大公共子结构，\n返回最大公共子结构的SMARTS字符串。已知在RDKit中，可以先通过rdkit.Chem.MolStandardize.rdMolStandardize.TautomerEnumerator()\n枚举分子的互变异构体，得到异构体的mol对象列表（会包括输入的分子结构在内）; 之后使用rdkit.Chem.rdFMCS.FindMCS()函数寻找最大公共子结构，\n返回对象的\".smartsString\"属性即为这些互变异构体的最大公共子结构。"
+        },
+        "data2": {
+            "query": "给定一个范围 [L, R]，任务是查找一对 (X, Y)，满足 L <= X < Y <= R 并且 X & Y 是所有可能对中的最大值，然后打印找到的对的二进制位与。"   
+        },
+        "data3": {
+            "query": "有一个change函数，能对字符串做一些操作，以下是这些操作的例子\ncode -> deco\nabbcde -> bcdeab\nasdk -> dkas\n\n请猜测change函数的实现，写出python代码"
+        }
+    }
+}

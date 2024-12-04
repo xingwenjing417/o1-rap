@@ -1,0 +1,100 @@
+{
+    "easy_code": {
+        "data1": {
+            "query": "编写一个Python函数并采用markdown代码块格式来解决以下问题：\n在一个排好序且被旋转的数组中找出不小于限定值的最小元素。\n\n参数：\nnums（List[int]）：在升序排序后并被旋转1到n次的唯一整数列表。\nlimit（int）：目标元素不能小于的限定值。\n返回：\nint：旋转数组中的最小元素。\n示例：\nassert find_min_in_rotated_sorted_array([3, 4, 5, 1, 2], 2) == 2\nassert find_min_in_rotated_sorted_array([3, 4, 5, 1, 2], 4) == 4"
+        },
+        "data2": {
+            "query": "用markdown代码块格式编写一段python函数来解决这个问题：\n计算 n 阶乘中尾部0的数量。\n同时也要计算n阶乘中有效数字的数量。\n\n参数:\nn (int): 需要计算阶乘尾数0的整数。\n\n返回值:\nint: n阶乘中尾部0的数量。\nint: n阶乘中的有效数字数量。\n示例：\nassert count_trailing_zeros_and_significant_figures(3) == (0, 1)"
+        },
+        "data3": {
+            "query": "编写一个Python函数，并使用markdown代码块格式来解决这个问题：\n计算第n个人得到自己座位的概率。 \n注意：所有人都丢失了他们的票，并将随机选择座位。\n\n参数：\nn（int）：飞机上的乘客和座位数。\n\n返回值：\nfloat：第n个人得到自己座位的概率。\n示例：\n断言 airplane_seat_assignment_probability(1) == 1.0"
+        },
+        "data4": {
+            "query": "编写一个Python函数，并使用Markdown代码块格式来解决以下问题：\n给定两个字符串s和t，返回s的不同子串与t相等的数量。\n\n参数：\ns (str)：第一个字符串。\nt (str)：第二个字符串。\n\n返回值：\nint：s的不同子串与t相等的数量。\n\n示例：\n断言 distinct_subsequences(\"rabbbit\", \"rabbit\") == 0\n断言 distinct_subsequences(\"sasxrabbitttesxarabbites\", \"rabbit\") == 2"
+        }
+    },
+    "middle_code": {
+        "data1": {
+            "query": "请写一个完整的Python函数`solve(smiles)`, 输入一个分子的SMILES，寻找它的互变异构体(包括它自身在内)的最大公共子结构，\n返回最大公共子结构的SMARTS字符串。已知在RDKit中，可以先通过rdkit.Chem.MolStandardize.rdMolStandardize.TautomerEnumerator()\n枚举分子的互变异构体，得到异构体的mol对象列表（会包括输入的分子结构在内）; 之后使用rdkit.Chem.rdFMCS.FindMCS()函数寻找最大公共子结构，\n返回对象的\".smartsString\"属性即为这些互变异构体的最大公共子结构。"
+        },
+        "data2": {
+            "query": "实现一个python完整函数`solve(smiles)`，输入为一个分子的SMILES，去掉分子中的盐，并计算产物的logP，结果保留3位小数。"
+        },
+        "data3": {
+            "query": "请写一个完整的Python函数`solve(smiles)`, 输入一个SMILES，返回分子中所有氢键供体的原子索引的集合。可以通过ChemicalFeatures来进行氢键供体的查询。\n先通过ChemicalFeatures.BuildFeatureFactory()函数读取保存在`rdkit.RDConfig.RDDataDir`文件夹下的BaseFeatures.fdef文件, 创建ChemicalFeatures的对象，\n然后调用GetFeaturesForMol()方法获取特征，循环得到的特征，检查feat.GetFamily()是否等于'Donor'， 是则通过获取feat.GetAtomIds()获取原子索引\n"
+        },
+        "data4": {
+            "query": "给定一个范围 [L, R]，任务是查找一对 (X, Y)，满足 L <= X < Y <= R 并且 X & Y 是所有可能对中的最大值，然后打印找到的对的二进制位与。"
+        },
+        "data5": {
+            "query": "请写一个完整的Python函数`solve(smiles, N)`, 输入一个分子的SMILES，以及氮的数量(N)， \n将这个分子中的\"N\"个无取代基的芳香碳原子（这些碳原子与1个氢原子相连）替换为氮原子，\n返回进行该替换可能产生的所有分子结构的SMILES的集合。已知要被替换的芳香碳原子可以通过SMARTS \"[cH]\" 进行匹配。\n"
+        },
+        "data6": {
+            "query": "我想计算第n个丑数(丑数定义为只包含因子 a, b, c 的正整数)，我的代码哪里错了？请帮忙修复，给出完整的代码。\n\n```python\ndef nthUglyNumber(n, a, b, c):\n    # 初始化三个指针和一个变量\n    p1, p2, p3, ugly = 1, 1, 1, 1\n\n    # 找到第 n 个丑数\n    while n > 1:\n        # 找到三个指针指向的最小丑数\n        min_ugly = min(p1 * a, p2 * b, p3 * c)\n\n        # 更新指针和丑数\n        if min_ugly == p1 * a:\n            p1 += 1\n        elif min_ugly == p2 * b:\n            p2 += 1\n        else:\n            p3 += 1\n\n        # 更新丑数\n        ugly = min_ugly\n\n        # 减少 n 的数量\n        n -= 1\n\n    return ugly\n```"
+        },
+        "data7": {
+            "query": "请写一个完整的Python函数`solve(smiles)`, 输入一个分子的SMILES，同时切开所有的可旋转键（按照RDKit中RotatableBondSmarts定义），返回所有片段SMILES的集合。’\n可以通过mol.GetSubstructMatches匹配rdkit.Chem.Lipinski.RotatableBondSmarts来获取所有的可旋转键两端的原子，通过mol.GetBondBetweenAtoms().GetIdx()找到可旋转键的索引。 \n之后再通过Chem.FragmentOnBonds()将可旋转键切开，并且用Chem.GetMolFrags()获取切开的片段。\n"
+        },
+        "data8": {
+            "query": "开发一个Python函数来计算两个概率分布之间的卡方散度。卡方散度，也被称为卡方距离，用于衡量两个概率分布之间的差异，常用于统计学和信息理论。定义函数为def chi_squared_divergence(dist1, dist2)，其中dist1和dist2是代表两个概率分布的列表或数组。\n"
+        },
+        "data9": {
+            "query": "请写一个Python函数`traverse(tree, root)` 解决这个问题:\n给定一颗二叉树，tree是它的边表，root是它的根节点，其中每个元素[i,j]代表节点i是节点j的父节点。请计算并返回它的先序遍历，中序遍历和后续遍历\n>>> traverse([[1,2], [1,3], [2,4], [2,5]], 1)\n[[1,2,4,5,3],[4,2,5,1,3],[4,5,2,3,1]]\n要实现这个功能，我们可以按照以下步骤来编写代码：\n\n1. 建三个空列表 `preorder`、`inorder` 和 `postorder` ，用于存储先序遍历、中序遍历和后序遍历的结果。\n\n2. 进行先序遍历、中序遍历和后序遍历。\n\n3. 检查当前节点是否在边表字典 `graph` 中。\n\n4. 返回包含先序遍历、中序遍历和后序遍历结果的列表 `[preorder, inorder, postorder]`。\n"
+        },
+        "data10": {
+            "query": "请编写一个Python程序，包含以下函数：\n从给定范围获取最大二进制位与对\n给定一个范围 [L, R]，任务是查找一对 (X, Y)，满足 L <= X < Y <= R 并且 X & Y 是所有可能对中的最大值，然后打印找到的对的二进制位与。\n函数的签名为 `maxAND(L, R)`。"
+        },
+        "data11": {
+            "query": "请编写一个Python程序，其功能是：\n寻找最长子数组的长度，其元素之和不能被整数K整除\n给定一个大小为N的数组arr[]和一个整数k，我们的任务是找到最长的子数组，其元素之和不能被k整除。如果不存在这样的子数组，那么返回-1。\n函数签名是`MaxSubarrayLength(arr, n, k)`。"
+        },
+        "data12": {
+            "query": "有一个change函数，能对字符串做一些操作，以下是这些操作的例子\ncode -> deco\nabbcde -> bcdeab\nasdk -> dkas\n\n请猜测change函数的实现，写出python代码\n"
+        },
+        "data13": {
+            "query": "创建一个Python函数来计算两个连续概率分布之间的Wasserstein距离。我们将通过概率分布的样本来计算距离。Wasserstein距离是在给定的度量空间上衡量两个概率分布之间距离的一种方法。定义函数为def wasserstein_distance(dist1, dist2)，其中dist1和dist2是代表两个连续概率分布样本的列表或数组。\n"
+        }
+
+    },
+    "hard_code": {
+        "data1": {
+            "query": "编写一个Python函数来计算Jaccard分数，也被称为Jaccard指数或交并比，用于二分类任务。Jaccard分数是衡量两组数据相似性的一种方式。在二分类的背景下，它测量了正标签的相似性和多样性。定义函数为 def jaccard_score(y_true, y_pred)，其中y_true和y_pred是包含二分类标签的列表或数组。"
+        },
+        "data2": {
+            "query": "请写一个完整的Python函数`solve(smiles)`，提取分子的Bemis-Murcko骨架，并转换为CSK(cyclic skeleton), 返回CSK的SMILES。"
+        },
+        "data3": {
+            "query": "用shapely库解决问题：\n实现 Python 函数 solve(poly, line) 计算一条线段line和多边形poly的边的交点个数\npoly用二元组数组表示，line用长度为2的二元组数组表示"
+        },
+        "data4": {
+            "query": "乔治拿来一组等长的木棒，将它们随机地砍断，使得每一节木棍的长度都不超过50个长度单位。然后他又想把这些木棍恢复到为裁截前的状态，但忘记了初始时有多少木棒以及木棒的初始长度。\n\n请写一个Python函数`solve(list_lengths):Int` 解决这个问题:\n帮助乔治计算木棒的可能最小长度。每一节木棍的长度在数组list_lengths中，都用大于零的整数表示。\n\n>>> solve([5, 2, 1, 5, 2, 1, 5, 2, 1])\n6\n这个问题可以通过以下步骤来解决：\n\n1. **排序**：我们需要对木棒的长度进行排序，以便我们可以从最大的长度开始考虑。这是因为如果我们从最小的长度开始，我们可能会错过可能的最小长度。\n\n2. **遍历**：我们需要遍历可能的最小长度，从1开始，一直到50。这是因为木棒的长度不会超过50个长度单位。\n\n3. **循环拼接**：对于每个可能的最小长度，我们需要检查是否可以通过砍断木棒并将它们恢复到这个长度来得到所有的木棒。我们通过从最大的长度开始，将木棒拼接起来，直到它们的总长度达到或超过当前的可能最小长度。如果在任何时候，我们无法找到足够长的木棒来拼接，我们就停止当前的可能最小长度，并尝试下一个。\n\n4. **返回成功结果**：如果我们能够通过砍断和拼接所有的木棒来得到当前的可能最小长度，那么我们就找到了可能的最小长度，并返回它。\n\n5. **返回失败结果**：如果我们检查了所有可能的最小长度，都没有找到合适的长度，那么我们就返回-1，表示没有找到可能的最小长度。"
+        },
+        "data5": {
+            "query": "请编写一个Python程序，实现以下功能：\n计算一个数N的所有因子对，使得每对因子的和与N互质\n给定一个整数N，任务是计算N的所有因子对，使得每对因子的和与N互质。\n函数签名为`CountPairs(n)`"
+        },
+        "data6": {
+            "query": "请编写一个Python程序，实现以下功能：\n找出前N个中心十二边形数的和\n给定一个数字N，任务是找出前N个中心十二边形数的和。\n```\n前几个中心十二边形数是 1, 13, 37, 73, 121, 181 … \n```\n函数签名是 `sum_Centered_Dodecagonal_num(n)`"
+        },
+        "data7": {
+            "query": "编写一个text_wrap(text)函数，输入是一段字符串文本，要求对每一个超过80个字符的行进行截断、拆成若干行，使得每一行都不超过80个字符，当截断行会截断某个单词时，将整个单词挪到下一行。函数返回处理后的字符串"
+        },
+        "data8": {
+            "query": "请写一个完整的Python函数`solve(smiles)`， 输入一个SMILES，返回分子是否为对称结构(True或False):"
+        },
+        "data9": {
+            "query": "已知Lipinski Rule of 5，要求药物分子尽量满足：分子量不大于500、氢键供体数目不多于5个、氢键受体数目不多于10个、LogP不高于5。如果这些条件的达成数目不到三条，那么则称分子不满足Lipinski规则。实现一个完整的Python函数`solve(smiles)`，输入为一个分子的SMILES，分析分子是否满足Lipinski规则。"
+        },
+        "data10": {
+            "query": "某医院昼夜24h各时段内需要的护士数量如下：\n- 2:00~6:00 10人\n- 6:00~10:00 15人\n- 10:00~14:00 25人\n- 14:00~18:00 20人\n- 18:00~22:00 18人\n- 22:00~2:00 12人。\n护士分别于2:00, 6:00, 10:00, 14:00, 18:00, 22:00分6批上班，并连续工作8h。\n试确定：该医院至少应设多少名护士，才能满足值班需要。\n\n定义 Python 函数 solve() 解决这个问题，返回结果。"
+        },
+        "data11": {
+            "query": "请编写一个Python程序，其中包含以下功能：\n以使总和能被2整除的方式形成具有给定范围内整数的数组\n给定三个正整数N，L和R。任务是找到形成大小为N的数组的方式的数量，其中每个元素都在范围[L, R]内，以使数组所有元素的总和能被2整除。\n函数签名是`countWays(n, l, r)`"
+        },
+        "data12": {
+            "query": "请编写一个Python程序，其功能是：\n统计在其中一人得到最多的情况下把N个物品分配给3个人的方式数量\n给定一个整数N，任务是找出把N个物品分配给3个人的所有可能方式的总数，满足以下条件：\n- 恰好只有一个人得到的物品数量在所有3个人中最多。\n- 每个人至少得到1个物品。\n函数签名是 `countWays(N)`。"
+        },
+        "data13": {
+            "query": "有一个python函数solve实现了对一个整数数组的操作，比如\n\n[1, 3, 4, 6, 8, 9, 0, -3] -> [3, 6, 9, -3]\n[1] -> []\n[1, 7, 0, 9, 4] -> [7, 9]\n\n请猜测他的逻辑并实现"
+        }
+        
+    }
+}

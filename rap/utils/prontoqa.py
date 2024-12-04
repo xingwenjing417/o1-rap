@@ -12,6 +12,20 @@ def get_prontoqa_dataset(file_name):
     } for v in examples.values()]
     return examples
 
+def get_code_dataset(code_data_name):
+    with open(code_data_name) as f:
+        data = json.load(f) 
+    query_list = []
+    for category in data.values():
+        for item in category.values():
+            query_list.append(item['query'])
+    #formate
+    examples = [
+        {
+            'query':query
+        } for query in query_list
+    ]
+    return examples
 
 def judge_prontoqa_answer(answer, output):
     return answer.lower() == output.lower()

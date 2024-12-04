@@ -7,22 +7,23 @@ from copy import deepcopy
 from tqdm import tqdm, trange
 
 from .mcts import MCTS, MCTSNode
-from .models import QueryLM
-
+#from utils_lzq.gpt4o import concurrent_apply_gpt4o,workflow_gpt4o_gen,workflow_gpt4o_transit,workflow_gpt4o_reward
+from utils_lzq.gpt4 import concurrent_apply_gpt4
 
 def is_terminal_prompt_or_action(prompt):
     prompt = prompt.split('\n\n')[-1]
-    if 'finish' in prompt.lower():
+    if 'finished' in prompt.lower():
         return True
     return False
 
-
 class ReasoningMCTSNode(MCTSNode):
+
+    #@property 装饰器将方法变成属性，使得可以通过 node.visited 的方式访问 self._visited 的值，而不需要显式地调用方法。
     @property
     def visited(self):
         return self._visited
 
-    def __init__(self, state, gen_fn, reward_fn, depth, r1, max_depth,
+    def __init__(self, state, gen_fn, reward_fn, depth, r1, max_depth,init_state,
                  parent: 'ReasoningMCTSNode' = None, action=None):
         self._conf = None
         self.children = []
@@ -39,24 +40,27 @@ class ReasoningMCTSNode(MCTSNode):
         self._visited = True # we do not need to visit again for ProntoQA MCTS settings
         self.parent = parent
         self._terminal = False
-
+        self.init_state = init_state
+    
     def _child_node(self, action, next_state, r1):
         return ReasoningMCTSNode(next_state, self.gen_fn, self.reward_fn, self.depth + 1,
-                                 r1, self.max_depth, parent=self, action=action)
+                                 r1, self.max_depth,self.init_state, parent=self, action=action)
+    
 
     def _get_children(self):
         self._visited = True
         self._calculate_reward()
         if self.is_terminal or self._r1 <= -1 or self.depth == self.max_depth:
             return self.children
-        for action, next_state, reward in self.gen_fn(self.state):
+        for action, next_state, reward in self.gen_fn(self.state, self.depth, self.init_state):
             self.children.append(self._child_node(action, next_state, reward))
         return self.children
-
+    
     def find_children(self):
         self.children = self.children or self._get_children()
         return self.children
 
+    #
     def find_one_child(self) -> MCTSNode:
         return random.choice(self.find_children())
 
@@ -69,7 +73,7 @@ class ReasoningMCTSNode(MCTSNode):
 
     @property
     def reward(self):
-        return self._r1
+         return self._r1
 
     def print(self, mcts: MCTS, file=None):
         def pprint(*args):
@@ -106,115 +110,92 @@ class ReasoningMCTSNode(MCTSNode):
         return state
 
 
-def reasoning_mcts_search(facts: str,
-                          target: str,
-                          agent_prompts,
-                          wm_transit_prompts,
-                          wm_output_prompts,
-                          wm_finish_prompts,
-                          wm_valid_prompts,
-                          world_model: QueryLM,
-                          n_sample_subquestion,
-                          temperature,
+def reasoning_mcts_search(query: str,
+                          gen_sp,
+                          transit_sp,
+                          reward_sp,
                           mcts_rollouts,
                           w_exp,
                           max_depth,
-                          eos_token_id,
-                          logging=False):
+                          client,
+                          logging=False
+                          ):
+    init_state = query
     if logging:
         os.path.exists('agent.log') and os.remove('agent.log')
         os.path.exists('wm.log') and os.remove('wm.log')
 
-    base_facts = facts[:facts.rindex('. ') + 1]
-    init_state = facts.split('. ')[-1]
 
     next_action_state_cache = {}
 
-    def gen_fn(state):
+    def gen_fn(state, cur_depth, init_state):
         if state in next_action_state_cache:
             return next_action_state_cache[state]
-
-        prompt_examples = agent_prompts["input"]
-        fact_input = agent_prompts["facts_format"].format(base_facts)
-        target_input = agent_prompts["target_format"].format(target)
-        claim_input = agent_prompts["claim_format"].format(state)
-        output_prefix = agent_prompts["next_step_prefix"]
-        agent_input = prompt_examples + fact_input + target_input + claim_input + output_prefix
-        agent_output = world_model.query_LM(agent_input, do_sample=True, num_return_sequences=n_sample_subquestion,
-                                            eos_token_id=eos_token_id, temperature=temperature)
-
-        agent_output = [o.strip().split(output_prefix + ' ')[-1] for o in agent_output]
+        user_input = f"Init_state:{init_state},Curr_state:{state},Depth:{cur_depth}"
+        '''
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": gen_sp_input},
+                {"role": "user", "content": agent_input},
+            ],
+            stream=False,
+            timeout=100000
+        )
+        agent_output = response.choices[0].message.content
+        '''
+        agent_output = concurrent_apply_gpt4(user_input, gen_sp)
+        ac_count = agent_output.count("action")
+        agent_output = agent_output.strip().split('生成动作：')[-1]
+        agent_output = agent_output.strip().split('action:')[-ac_count:]
+        agent_output = [item for item in agent_output if item != '']
         agent_output_counter = Counter(agent_output)
 
         if logging:
             with open('agent.log', 'a') as f:
-                print(agent_input[len(prompt_examples):], file=f)
+                
                 for o in agent_output:
                     print(f'{o}', file=f)
                 print('=' * 20, file=f)
 
         next_state_dict = defaultdict(lambda: [])
-
-        for action in sorted(agent_output_counter):
-            next_state = transit_fn(state, action)
+        
+        for action in agent_output:
+            next_state = transit_fn(state, action, init_state)
             next_state_dict[next_state].append((action, agent_output_counter[action]))
-
+        
         ret_actions, ret_next_states = [], []
         for next_state, actions in next_state_dict.items():
             ret_actions.append(max(actions, key=lambda x: x[1])[0])
             ret_next_states.append(next_state)
-
-        rewards = reward_fn(state, ret_actions, ret_next_states) if len(ret_actions) else []
+        rewards = reward_fn(state, ret_actions, ret_next_states,init_state) if len(ret_actions) else []
         ret = list(zip(ret_actions, ret_next_states, rewards))
         next_action_state_cache[state] = ret
         return ret
 
-    def transit_fn(state, action):
-        if action == 'Finish.':
-            prompt_examples = wm_output_prompts["input"]
-            target_input = wm_output_prompts["target_format"].format(target)
-            claim_input = wm_output_prompts["claim_format"].format(state)
-            output_prefix = wm_output_prompts["output_prefix"]
-            world_input = prompt_examples + target_input + claim_input + output_prefix
-        else:
-            prompt_examples = wm_transit_prompts["input"]
-            facts_input = wm_transit_prompts["facts_format"].format(state, action)
-            output_prefix = wm_transit_prompts["next_claim_prefix"]
-            world_input = prompt_examples + facts_input + output_prefix
+    def transit_fn(state, action, init_state):
+        user_input = f"Init_state:{init_state},Curr_state:{state},Action:{action}"
+        world_output = concurrent_apply_gpt4(user_input, transit_sp)
+        result = world_output.strip().split('output_prefix')[-1]
 
-        world_output = world_model.query_LM(world_input, do_sample=False, num_return_sequences=1,
-                                            eos_token_id=eos_token_id)[0]
-        output = world_output.strip().split(output_prefix + " ")[-1]
-        result = output.split(output_prefix + " ")[-1]
-
-        if logging:
-            with open('wm_transit.log', 'a') as f:
-                print(world_input[len(prompt_examples):], file=f)
-                print(world_output[len(prompt_examples):], file=f)
-                print('='*20, file=f)
         return result
 
-    def reward_fn(state, actions, next_states):
+    def reward_fn(state, actions, next_states,init_state):
         world_inputs = []
-
         for action, next_state in zip(actions, next_states):
-            if action == 'Finish.':
-                prompt_examples = wm_finish_prompts["input"]
-                target_input = wm_finish_prompts["target_format"].format(target)
-                claim_input = wm_finish_prompts["claim_format"].format(state)
-                output_prefix = wm_finish_prompts["output_prefix"]
-                world_input = prompt_examples + target_input + claim_input + output_prefix
-            else:
-                prompt_examples = wm_valid_prompts["input"]
-                facts_input = wm_valid_prompts["facts_format"].format(state, action)
-                next_input = wm_valid_prompts["next_step_format"].format(next_state)
-                output_prefix = wm_valid_prompts["valid_prefix"]
-                world_input = prompt_examples + facts_input + next_input + output_prefix
-            world_inputs.append(world_input)
+            agent_input = f"Init_state:{init_state},Curr_state:{state},Action:{action},Next_state:{next_state}"
+            world_inputs.append(agent_input)
+        world_outputs = []
+        for w_input in world_inputs:
+            w_output = concurrent_apply_gpt4(w_input, reward_sp)
+            w_output = w_output.strip().split('result:')[-1]
+            w_output = int(w_output)
+            world_outputs.append(w_output)
+        wo_sum = sum(world_outputs)
+        rewards = [wo / wo_sum for wo in world_outputs]
+        print(f"reward list is {rewards}")
 
-        world_outputs = world_model.query_next_token(world_inputs)
-        rewards = world_outputs[:, 0]
-        rewards = rewards.detach().cpu().numpy().tolist()
+
 
         if logging:
             with open('wm_reward.log', 'a') as f:
@@ -226,12 +207,15 @@ def reasoning_mcts_search(facts: str,
 
     mcts = MCTS(w_exp=w_exp, prior=True, aggr_reward='mean', aggr_child='max')
     root = ReasoningMCTSNode(init_state, gen_fn, None,
-                             depth=1, r1=1, max_depth=max_depth, parent=None)
+                             depth=1, r1=1, max_depth=max_depth, init_state=init_state, parent=None)
     trajs = []
     outputs = []
     trees = []
-    for _ in (pbar := trange(mcts_rollouts, disable=bool(int(os.environ.get("LOCAL_RANK", -1))), position=0)):
+    
+    for i in (pbar := trange(mcts_rollouts, disable=bool(int(os.environ.get("LOCAL_RANK", -1))), position=0)):
+        print(f"mcts {i}th round,start rollout")
         mcts.rollout(root)
+        print(f"now stop rollout,mcts {i}th round")
         root.print(mcts)
         max_n, max_r = mcts.max_mean_terminal(root)
         cur = max_n.parent
@@ -242,8 +226,9 @@ def reasoning_mcts_search(facts: str,
                 traj.append(cur.action)
                 cur = cur.parent
             traj.append(cur.state)
-            traj = list(reversed(traj))
+            traj = list(reversed(traj))  
         trajs.append(traj)
+        
         for i in ['true', 'false']:
             if i in max_n.state.lower():
                 temp_r = i
